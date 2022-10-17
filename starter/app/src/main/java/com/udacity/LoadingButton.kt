@@ -4,6 +4,7 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Path
 import android.util.AttributeSet
 import android.view.View
 import kotlin.properties.Delegates
@@ -20,14 +21,27 @@ class LoadingButton @JvmOverloads constructor(
 
     }
 
+    private val paint = Paint()
 
     init {
-
+        isClickable = true
     }
 
-
     override fun onDraw(canvas: Canvas?) {
-        canvas?.drawColor(resources.getColor(R.color.colorPrimary))
+        canvas?.drawColor(resources.getColor(R.color.colorPrimary, context.theme))
+
+        paint.color = resources.getColor(R.color.white, context.theme)
+        paint.style = Paint.Style.FILL
+        paint.textSize = resources.getDimension(R.dimen.default_text_size)
+        
+        canvas?.drawText(
+            resources.getString(R.string.button_name),
+            (width / 2F) - 140,
+            (height / 2F) + 20,
+            paint
+        )
+
+        canvas?.save()
         super.onDraw(canvas)
     }
 
