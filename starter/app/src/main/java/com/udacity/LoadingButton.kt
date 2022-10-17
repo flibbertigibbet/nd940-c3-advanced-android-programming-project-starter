@@ -32,12 +32,15 @@ class LoadingButton @JvmOverloads constructor(
 
         paint.color = resources.getColor(R.color.white, context.theme)
         paint.style = Paint.Style.FILL
+        paint.textAlign = Paint.Align.CENTER
         paint.textSize = resources.getDimension(R.dimen.default_text_size)
-        
+
+        val label = resources.getString(R.string.button_name)
+
         canvas?.drawText(
-            resources.getString(R.string.button_name),
-            (width / 2F) - 140,
-            (height / 2F) + 20,
+            label,
+            width / 2F,
+            (height / 2F) - ((paint.ascent() + paint.descent()) / 2),
             paint
         )
 
