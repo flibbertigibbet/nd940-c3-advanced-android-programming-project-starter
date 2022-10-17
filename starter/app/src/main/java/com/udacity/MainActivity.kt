@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import kotlinx.android.synthetic.main.content_main.view.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -54,11 +55,18 @@ class MainActivity : AppCompatActivity() {
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+            when (id) {
+                downloadID -> {
+                    custom_button.setIsLoading(false)
+                    // TODO: get status and send notification
+                }
+            }
         }
     }
 
     private fun download(url: String) {
         Log.d("Main", "go download $url")
+        custom_button.setIsLoading(true)
         val request =
             DownloadManager.Request(Uri.parse(url))
                 .setTitle(getString(R.string.app_name))
@@ -73,6 +81,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val CHANNEL_ID = "channelId"
+        private const val CHANNEL_ID = "loadAppChannelId"
     }
 }

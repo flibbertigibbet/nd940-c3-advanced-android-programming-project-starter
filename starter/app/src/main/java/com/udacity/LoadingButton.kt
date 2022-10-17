@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import kotlin.properties.Delegates
 
@@ -18,13 +19,17 @@ class LoadingButton @JvmOverloads constructor(
     private val valueAnimator = ValueAnimator()
 
     private var buttonState: ButtonState by Delegates.observable(ButtonState.Completed) { p, old, new ->
-
+        invalidate()
     }
 
     private val paint = Paint()
 
     init {
         isClickable = true
+    }
+
+    fun setIsLoading(isLoading: Boolean) {
+        buttonState = if (isLoading) ButtonState.Loading else ButtonState.Completed
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -35,12 +40,15 @@ class LoadingButton @JvmOverloads constructor(
         paint.textAlign = Paint.Align.CENTER
         paint.textSize = resources.getDimension(R.dimen.default_text_size)
 
-        val label = resources.getString(R.string.button_name)
+        val label = when(buttonState) {
+            ButtonState.Loading -> resources.getString(R.string.button_loading)
+            else -> resources.getString(R.string.button_name)
+        }
 
         canvas?.drawText(
             label,
             width / 2F,
-            (height / 2F) - ((paint.ascent() + paint.descent()) / 2),
+            (height / 2F) - ((paint.ascent() + paint.descent()) / 2F),
             paint
         )
 
