@@ -54,12 +54,41 @@ class MainActivity : AppCompatActivity() {
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
-            when (id) {
+            val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+            when (intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)) {
                 downloadID -> {
-                    custom_button.setIsLoading(false)
-                    // TODO: get status and send notification
+                    val cursor = downloadManager.query(
+                        DownloadManager.Query().setFilterById(downloadID)
+                    )
+                    if (cursor.moveToFirst()) {
+                        val statusCol = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)
+                        when(cursor.getInt(statusCol)) {
+                            DownloadManager.STATUS_PENDING -> {
+                                Log.w("Main", "waiting to download...")
+                            }
+                            DownloadManager.STATUS_RUNNING -> {
+                                // this state never broadcasts
+                                val colTotalBytes = cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)
+                                val totalBytes = cursor.getLong(colTotalBytes)
+                                val colGotBytes = cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)
+                                val gotBytes = cursor.getLong(colGotBytes)
+                                val progress = (gotBytes * 100 / totalBytes)
+                                Log.d("Main", "download progress ... $progress")
+                            }
+                            DownloadManager.STATUS_FAILED -> {
+                                Log.w("Main", "download failed")
+                                custom_button.setIsLoading(false)
+                            }
+                            DownloadManager.STATUS_SUCCESSFUL -> {
+                                Log.d("Main", "download success!")
+                                custom_button.setProgress(0)
+                                custom_button.setIsLoading(false)
+                            }
+                        }
+                        cursor.close()
+                    }
                 }
+                else -> Log.w("Main", "Got some other download ID: ${intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)}")
             }
         }
     }
@@ -67,6 +96,7 @@ class MainActivity : AppCompatActivity() {
     private fun download(url: String) {
         Log.d("Main", "go download $url")
         custom_button.setIsLoading(true)
+        custom_button.setProgress(30)
         val request =
             DownloadManager.Request(Uri.parse(url))
                 .setTitle(getString(R.string.app_name))
